@@ -1,19 +1,21 @@
-import requests
+from get import l_create, host_list
 import mysql.connector as sql
 
-data = requests.get("https://raw.githubusercontent.com/notracking/hosts-blocklists/master/dnscrypt-proxy/dnscrypt-proxy.blacklist.txt").text
-list = data.split("\n")
 db = 'adlist'
-
 conn = sql.connect(user='root', password='123654', database=db)
 cursor = conn.cursor()
 
-for host in list:
-     line = host.strip()
-     if not host.startswith("#"):
-          cursor.execute("INSERT INTO adlist_main (hosts) VALUES (%s)", (host,))
-          conn.commit()
+def db_fill():
+    l_create()
+    r_count = 0
+    for host in host_list:
+        cursor.execute("INSERT INTO adlist_main (hosts) VALUES (%s)", (host,))
+        conn.commit()
+        r_count += 1
+    print(str(r_count) + " records processed")
+
+db_fill()
 
 ## добавить метрику скорости выполнения
-# слишком медленная скорость выполнения инсёрта, нужно передаелать логику добавления (одной строкой)
+## слишком медленная скорость записи в БД, нужно передаелать логику записи (одним инсёртом)
 ## добавить автосоздание базы и таблицы если их не существует
